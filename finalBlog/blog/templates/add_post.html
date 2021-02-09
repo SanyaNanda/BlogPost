@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}
+Create a new blog post
+{% endblock %}
+{% block extrahead %}
+<script>window.CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/';</script>
+{{ block.super }}
+{% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<h1>Add Blog Post</h1>
+<br/><br/>
+<div class="form-group">
+<form method="POST" enctype="multipart/form-data">
+	{% csrf_token %}
+	{{ form.media }}
+	{{ form.as_p }}
+	<button class="btn btn-secondary">
+		Post
+	</button>
+</form>
+</div>
+<script>
+	var name = "{{ user.id }}";
+	document.getElementById('sanya').value = name;
+</script>
+{% else %}
+You are not logged in!
+{% endif %}
+{% endblock %}

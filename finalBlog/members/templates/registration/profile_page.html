@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Profile
+{% endblock %}
+{% block content %}
+<h1>User Profile</h1>
+    <div class="card mb-3">
+  <div class="row no-gutters">
+    <div class="col-md-2">
+    	{% if page_user.profile_pic %}
+      <img src="{{ page_user.profile_pic.url }}" class="card-img" alt="..." width="200" height="200">
+      {% else %}
+       <img src="{% static 'blog/images/no_profile_pic.jpg' %}" class="card-img" alt="..." width="200" height="200">
+      {% endif %}
+    </div>
+    <div class="col-md-10">
+      <div class="card-body">
+        <h5 class="card-title">{{ page_user.user.first_name }} {{ page_user.user.last_name }} </h5>
+        <p class="small text-muted">
+        	{% if page_user.your_website %}
+        	| <a href="{{ page_user.your_website }}">Website</a> 
+        	{% endif %}
+
+        	{% if page_user.linkedin %}
+        	| <a href="{{ page_user.linkedin }}">Linkedin</a> 
+        	{% endif %}
+
+        	{% if page_user.twitter %}
+        	| <a href="{{ page_user.twitter }}">Twitter</a> 
+        	{% endif %}
+
+        	{% if page_user.fb %}
+        	| <a href="{{ page_user.fb }}">Facebook</a> 
+        	{% endif %}
+
+        	{% if page_user.insta %}
+        	| <a href="{{ page_user.insta }}">Instagram</a> 
+        	{% endif %}
+
+        </p>
+        <p class="card-text">{{ page_user.bio }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<ul style="list-style-type: none;">
+{% for post in object_list %}
+<div class="jumbotron">
+<li>
+{% if user.is_authenticated %}
+{% if user.id == page_user.user.id %}
+{% for post in page_user.user.post %}
+<a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ page_user.user.first_name}} {{ page_user.user.last_name}} | {{ post.post_date }} IST</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> </li>
+<small><a href="{% url 'update_post' post.pk %}">Edit</a></small>
+<small><a href="{% url 'delete_post' post.pk %}">Delete</a></small></div>
+{% endfor %}
+{% endif %}
+{% endif %}
+<br/><br/>
+{% endfor %}
+</ul>
+{% endblock %}
