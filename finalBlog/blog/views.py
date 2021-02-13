@@ -48,6 +48,19 @@ class DeletePostView(DeleteView):
 	template_name = 'delete_post.html'
 	success_url = reverse_lazy('home')
 
+class LikedView(ListView):
+	model = Post
+	template_name = 'liked_posts.html'
+
+	# def get_context_data(self, *args, **kwargs):
+	# 	context = super(LikedView, self).get_context_data(**kwargs)
+	# 	stuff = get_object_or_404(Post)
+	# 	liked='c'
+	# 	if stuff.likes.filter(id=self.request.user.id).exists():
+	# 		liked = self.request.user.id
+	# 	context["liked"] = liked
+	# 	return context
+
 def LikeView(request, pk):
 	post = get_object_or_404(Post, id=request.POST.get('post_id'))
 	liked = False
@@ -60,44 +73,44 @@ def LikeView(request, pk):
 	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
 
 
-def MyLikedPostView(request):
-	post = get_object_or_404(Post)
-	context={}
-	l=[]
-	for i in post:
-		if i.likes.filter(id=request.user.id).exists():
-			l.append(request.user.username)
-	context['post_liked'] = l
-	return render(request, 'liked_posts.html', context)
+# def MyLikedPostView(request):
+# 	post = get_object_or_404(Post)
+# 	context={}
+# 	l=[]
+# 	for i in post:
+# 		if i.likes.filter(id=request.user.id).exists():
+# 			l.append(request.user.username)
+# 	context['post_liked'] = l
+# 	return render(request, 'liked_posts.html', context)
 
 
-'''def LikedView(request, pk):
-	post = get_object_or_404(Post, id=request.POST.get('post_id'))
-	l=[]
-	if post.likes.filter(id=request.user.id).exists():
-		l.append(post)
+# def LikedView(request, pk):
+# 	post = get_object_or_404(Post, id=request.POST.get('post_id'))
+# 	l=[]
+# 	if post.likes.filter(id=request.user.id).exists():
+# 		l.append(post)
 		
-	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))'''
+# 	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
 
 
-class LikedView(ListView):
-	model = Post
-	template_name = 'liked_posts.html'
+# class LikedView(ListView):
+# 	model = Post
+# 	template_name = 'liked_posts.html'
 
-	def get_context_data(self, *args, **kwargs):
-		context = super(LikedView, self).get_context_data(**kwargs)
-		l=[]
-		for i in get_object_or_404(Post).likes.filter(id=self.request.user.id):
-			l.append(i)
+# 	def get_context_data(self, *args, **kwargs):
+# 		context = super(LikedView, self).get_context_data(**kwargs)
+# 		l=[]
+# 		for i in get_object_or_404(Post).likes.filter(id=self.request.user.id):
+# 			l.append(i)
 		
 
-		context["posts"] = l
-		return context
+# 		context["posts"] = l
+# 		return context
 
-def post_likes(request, pk):
-    posts = Post.objects.all()
-    post_likes = posts.likes.all()
-    context = {'post_likes': post_likes,}
-    return render(request, 'liked_posts.html', context)
+# def post_likes(request, pk):
+#     posts = Post.objects.all()
+#     post_likes = posts.likes.all()
+#     context = {'post_likes': post_likes,}
+#     return render(request, 'liked_posts.html', context)
 
 		
