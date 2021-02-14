@@ -1,11 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
+{% load extras %}
 {% block title %}
 {{ post.title }}
 {% endblock %}
 {% block content %}
 <h1>{{ post.title }}</h1>
 <small>By: {{ post.author.first_name }} {{ post.author.last_name }} <br>Published on: {{ post.post_date}} IST</small>
+<!-- {% if post.update_date %}
+<small>Updated on: {{ post.update_date }}</small>
+{% endif %} -->
 <hr>
 <br/>
 {% if post.header_image %}
@@ -91,9 +96,61 @@
 </div>
 <div class="container">
   <h3>Comments</h3>
+  <small>Total comments: {{ comments.count }}</small>
+    {% if user.is_authenticated %}
+  <div class="form-group">
+<form method="POST" action="{% url 'post_comment' post.pk %}">
+  {% csrf_token %}
+  <textarea  rows="6" cols="100" name="comment" placeholder="Enter your comment..."></textarea>
+  <input type="hidden" name="postSno" value="{{ post.id }}">
+  <input type="submit" name="Submit" class="btn btn-sm btn-primary" value="Comment">
+</form>
+</div>
+{% else %}
+Login to Comment
+{% endif %}
+{% for comment in comments %}
   <div class="row my-3">
-    <div class="col-md-2">image</div>
-    <div class="col-md-10">Comment</div>
-  </div>
+    <div class="col-md-1">{% if comment.user.profile.profile_pic %}
+      <img src="{{ comment.user.profile.profile_pic.url }}" class="img-thumbnail rounded-circle" alt="..." >
+      {% else %}
+       <img src="{% static 'blog/images/no_profile_pic.jpg' %}" class="img-thumbnail rounded-circle" alt="...">
+      {% endif %}</div>
+    <div class="col-md-11"><b>{{ comment.user.username }}</b> <small>{{ comment.timestamp | naturaltime }}</small><br>{{ comment.comment }}
+    <div class="reply mx-0">
+  <button class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#replyBox{{ comment.sno }}" aria-expanded="false" aria-controls="replyBox{{ comment.sno }}">
+    Reply
+  </button>
+</div>
+<div class="collapse" id="replyBox{{ comment.sno }}">
+  <div class="card card-body my-2">
+    <div class="form-group">
+<form method="POST" action="{% url 'post_comment' post.pk %}">
+  {% csrf_token %}
+  <textarea  rows="4" cols="70" name="comment" style="border:solid 1px;" placeholder="Enter your comment..."></textarea>
+  <input type="hidden" name="parentSno" value="{{ comment.sno }}">
+  <input type="hidden" name="postSno" value="{{ post.id }}">
+  <input type="submit" name="Submit" class="btn btn-sm btn-primary" value="Comment">
+</form>
+</div>
+</div>
+</div>
+<div class="replies my-2">
+  {% for reply in replyDict|get_val:comment.sno %}
+  <div class="row my-2">
+    <div class="col-md-1">{% if reply.user.profile.profile_pic %}
+      <img src="{{ reply.user.profile.profile_pic.url }}" class="img-thumbnail rounded-circle w-75" alt="..." >
+      {% else %}
+       <img src="{% static 'blog/images/no_profile_pic.jpg' %}" class="img-thumbnail rounded-circle w-75" alt="...">
+      {% endif %}</div>
+    <div class="col-md-11"><b>{{ reply.user.username }}</b> <small>{{ reply.timestamp | naturaltime }}</small><br>{{ reply.comment }}
+    </div>
+  <br>
+</div>
+  {% endfor %}
+</div>
+</div>
+</div>
+{% endfor %}
 </div>
 {% endblock %}

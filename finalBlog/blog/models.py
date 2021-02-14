@@ -12,6 +12,7 @@ class Post(models.Model):
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
 	body = CKEditor5Field('Text', config_name='extends')
 	post_date = models.DateTimeField(auto_now_add=True)
+	update_date = models.DateTimeField(null=True)
 	likes = models.ManyToManyField(User, related_name='blog_posts')
 
 	def total_likes(self):
@@ -26,6 +27,11 @@ class Post(models.Model):
 	def get_absolute_url(self):
 		#return reverse('post_details', args=(str(self.id)))
 		return reverse('home')
+
+	def update(self, *args, **kwargs):
+		kwargs.update({'update_date': timezone.now})
+		super().update(*args, **kwargs)
+		return self
 
 # class Likes(models.Model):
 # 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_like')
@@ -57,3 +63,9 @@ class Comment(models.Model):
 	post = models.ForeignKey(Post, on_delete=models.CASCADE)
 	parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, related_name='parent_comment')
 	timestamp = models.DateTimeField(default=timezone.now)
+
+	def __str__(self):
+		return self.comment[0:20] + '... by ' + str(self.user.username)
+
+	def total_comments(self):
+		return self.count()

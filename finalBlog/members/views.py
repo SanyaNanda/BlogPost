@@ -26,15 +26,16 @@ class PasswordsChangeView(PasswordChangeView):
 def password_changed(request):
 	return render(request, 'registration/pass_success.html')
 
-class ShowProfilePageView(generic.DetailView):
+class ShowProfilePageView(generic.TemplateView):
 	model = Profile
 	template_name = 'registration/profile_page.html'
 
 	def get_context_data(self, *args, **kwargs):
-		users = Profile.objects.all()
-		context = super(ShowProfilePageView, self).get_context_data(*args, **kwargs)
+		context = super().get_context_data(*args, **kwargs)
 		page_user = get_object_or_404(Profile, id=self.kwargs['pk'])
+		stuff = Post.objects.filter(author=page_user.user).order_by('-post_date')
 		context["page_user"] = page_user
+		context["stuff"] = stuff
 		return context 
 
 class EditProfilePageView(generic.UpdateView):

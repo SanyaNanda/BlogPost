@@ -1,9 +1,11 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Post
+from .models import Post, Comment
 from .forms import PostForm, EditForm
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect
+from django.contrib import messages
+from blog.templatetags import extras
 
 class HomeView(ListView):
 	model = Post
@@ -28,8 +30,20 @@ class PostDetailView(DetailView):
 		liked = False
 		if stuff.likes.filter(id=self.request.user.id).exists():
 			liked = True
+
+		comments=Comment.objects.filter(post=stuff, parent=None).order_by('-timestamp')
+		replies=Comment.objects.filter(post=stuff).exclude(parent=None)
+		replyDict={}
+		for reply in replies:
+			if reply.parent.sno not in replyDict.keys():
+				replyDict[reply.parent.sno] = [reply]
+			else:
+				replyDict[reply.parent.sno].append(reply)
+		
 		context["total_likes"] = total_likes
 		context["liked"] = liked
+		context["comments"]=comments
+		context["replyDict"]=replyDict
 		return context
 
 class AddPostView(CreateView):
@@ -42,6 +56,13 @@ class UpdatePostView(UpdateView):
 	model = Post
 	form_class = EditForm
 	template_name = 'update_post.html'
+
+	def get_context_data(self, *args, **kwargs):
+		context = super(UpdatePostView, self).get_context_data(**kwargs)
+		stuff = get_object_or_404(Post, id=self.kwargs['pk'])
+		update_time = stuff.update()
+		context['update_time'] = update_time
+
 
 class DeletePostView(DeleteView):
 	model = Post
@@ -70,6 +91,25 @@ def LikeView(request, pk):
 	else:
 		post.likes.add(request.user)
 		liked = True
+	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
+
+
+def postComment(request, pk):
+	if request.method=="POST":
+		comment = request.POST.get("comment")
+		user = request.user
+		postSno = request.POST.get("postSno")
+		post = get_object_or_404(Post, id=request.POST.get('postSno'))
+		parentSno = request.POST.get("parentSno")
+		if parentSno == "":
+			comment = Comment(comment=comment, user=user, post=post)
+			comment.save()
+			messages.success(request,"Your comment has been posted successfully!")
+		else:
+			parent = Comment.objects.get(sno = parentSno)
+			comment = Comment(comment=comment, user=user, post=post, parent=parent)
+			comment.save()
+			messages.success(request,"Your Reply has been posted successfully!")
 	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
 
 
