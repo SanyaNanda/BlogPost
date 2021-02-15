@@ -6,6 +6,7 @@ from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from blog.templatetags import extras
+from django.utils import timezone
 
 class HomeView(ListView):
 	model = Post
@@ -57,11 +58,18 @@ class UpdatePostView(UpdateView):
 	form_class = EditForm
 	template_name = 'update_post.html'
 
-	def get_context_data(self, *args, **kwargs):
-		context = super(UpdatePostView, self).get_context_data(**kwargs)
-		stuff = get_object_or_404(Post, id=self.kwargs['pk'])
-		update_time = stuff.update()
-		context['update_time'] = update_time
+	def get_object(self):
+		obj = super().get_object()
+		# Record the last accessed date
+		obj.update_date = timezone.now()
+		obj.save()
+		return obj
+
+	# def get_context_data(self, *args, **kwargs):
+	# 	context = super(UpdatePostView, self).get_context_data(**kwargs)
+	# 	stuff = get_object_or_404(Post, id=self.kwargs['pk'])
+	# 	update_time = stuff.update()
+	# 	context['update_time'] = update_time
 
 
 class DeletePostView(DeleteView):
@@ -101,7 +109,7 @@ def postComment(request, pk):
 		postSno = request.POST.get("postSno")
 		post = get_object_or_404(Post, id=request.POST.get('postSno'))
 		parentSno = request.POST.get("parentSno")
-		if parentSno == "":
+		if parentSno == None:
 			comment = Comment(comment=comment, user=user, post=post)
 			comment.save()
 			messages.success(request,"Your comment has been posted successfully!")

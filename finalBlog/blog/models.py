@@ -10,9 +10,10 @@ class Post(models.Model):
 	title = models.CharField(max_length=255)
 	header_image = models.ImageField(null=True, blank=True, upload_to="images/")
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
-	body = CKEditor5Field('Text', config_name='extends')
-	post_date = models.DateTimeField(auto_now_add=True)
-	update_date = models.DateTimeField(null=True)
+	body = models.TextField()
+	#body = CKEditor5Field('Text', config_name='extends')
+	post_date = models.DateTimeField(auto_now_add=True, editable=False)
+	update_date = models.DateTimeField(blank=True, null=True)
 	likes = models.ManyToManyField(User, related_name='blog_posts')
 
 	def total_likes(self):
@@ -30,7 +31,7 @@ class Post(models.Model):
 
 	def update(self, *args, **kwargs):
 		kwargs.update({'update_date': timezone.now})
-		super().update(*args, **kwargs)
+		#super().update(*args, **kwargs)
 		return self
 
 # class Likes(models.Model):
