@@ -2,6 +2,7 @@
 {% load static %}
 {% load humanize %}
 {% load extras %}
+{% load hitcount_tags %}
 {% block title %}
 {{ post.title }}
 {% endblock %}
@@ -12,6 +13,9 @@
 {% else %}
 <small>Last Updated {{ post.update_date | naturaltime }}</small>
 {% endif %}
+<br>
+<small>Views: {% get_hit_count for post %}</small><br>
+<small>This Post is a {{ post.body|readtime }}</small>
 <hr>
 <br/>
 {% if post.header_image %}

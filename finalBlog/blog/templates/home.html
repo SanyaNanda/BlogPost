@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
+{% load hitcount_tags %}
+{% load extras %}
 {% block content %}
 <h1>Post</h1>
 <ul style="list-style-type: none;">
 {% for post in object_list %}
 <li>
-<a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ post.author.first_name}} {{ post.author.last_name}} | {{ post.post_date }} IST</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> </li>
+<a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ post.author.first_name}} {{ post.author.last_name}} | {{ post.post_date }} IST | Views: {% get_hit_count for post %} | {{ post.body|readtime }}</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> </li>
 {% if user.is_authenticated %}
 {% if user.id == post.author.id %}
 <small><a href="{% url 'update_post' post.pk %}">Edit</a></small>
@@ -14,4 +16,18 @@
 <br/><br/>
 {% endfor %}
 </ul>
+
+<h3>Popular Posts</h3>
+<ul style="list-style-type: none;">
+{% for p in popular_posts %}
+<li>
+<a href="{% url 'post_details' post.pk %}">{{ p.title }}</a> - <small>{{ p.author.first_name}} {{ p.author.last_name}} | {{ p.post_date }} IST | Views: {% get_hit_count for p %} | {{ p.body|readtime }}</small><br>{{ p.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> </li>
+{% if user.is_authenticated %}
+{% if user.id == post.author.id %}
+<small><a href="{% url 'update_post' post.pk %}">Edit</a></small>
+<small><a href="{% url 'delete_post' post.pk %}">Delete</a></small>
+{% endif %}
+{% endif %}
+<br/><br/>
+{% endfor %}
 {% endblock %}

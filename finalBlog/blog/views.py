@@ -7,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from blog.templatetags import extras
 from django.utils import timezone
+from hitcount.views import HitCountDetailView
 
 class HomeView(ListView):
 	model = Post
@@ -14,14 +15,23 @@ class HomeView(ListView):
 	ordering = ['-post_date']
 	#ordering = ['-id']
 
+	# def get_context_data(self, **kwargs):
+	# 	context = super(HomeView, self).get_context_data(**kwargs)
+	# 	context.update({
+	# 		'popular_posts': Post.objects.order_by('-hit_count_generic')[:3],
+	# 		})
+	# 	return context
+
 class MyPostView(ListView):
 	model = Post
 	template_name = 'my_posts.html'
 	ordering = ['-post_date']
 
-class PostDetailView(DetailView):
+class PostDetailView(HitCountDetailView):
 	model = Post
 	template_name = 'post_details.html'
+	context_object_name = 'post'
+	count_hit = True
 
 	def get_context_data(self, *args, **kwargs):
 		context = super(PostDetailView, self).get_context_data(**kwargs)
@@ -43,8 +53,8 @@ class PostDetailView(DetailView):
 		
 		context["total_likes"] = total_likes
 		context["liked"] = liked
-		context["comments"]=comments
-		context["replyDict"]=replyDict
+		context["comments"] = comments
+		context["replyDict"] = replyDict
 		return context
 
 class AddPostView(CreateView):

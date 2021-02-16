@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'blog',
     'members',
     'django_ckeditor_5',
-    'django.contrib.humanize'
+    'django.contrib.humanize',
+    'hitcount',
 ]
 
 MIDDLEWARE = [

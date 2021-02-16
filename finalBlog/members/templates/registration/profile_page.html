@@ -55,9 +55,13 @@ Profile
 </div>
 {% for post in stuff %}
 <div class="container">
-<a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ page_user.user.first_name}} {{ page_user.user.last_name}} | {{ post.post_date }} IST</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> 
+<a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ page_user.user.first_name}} {{ page_user.user.last_name}} | {{ post.post_date }} IST</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> </div>
+{% if user.id == post.author.id %}
+<div class="container">
 <small><a href="{% url 'update_post' post.pk %}">Edit</a></small>
-<small><a href="{% url 'delete_post' post.pk %}">Delete</a></small></li></div><br/><br/>
+<small><a href="{% url 'delete_post' post.pk %}">Delete</a></small></li></div>
+{% endif %}
+<br/><br/>
 {% endfor %}
 {% endif %}
 </ul>

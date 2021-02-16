@@ -4,6 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from datetime import datetime, date
 from django_ckeditor_5.fields import CKEditor5Field
+from hitcount.models import HitCountMixin, HitCount
+from django.contrib.contenttypes.fields import GenericRelation
 #from ckeditor.fields import RichTextField
 # Create your models here.
 class Post(models.Model):
@@ -15,6 +17,7 @@ class Post(models.Model):
 	post_date = models.DateTimeField(auto_now_add=True, editable=False)
 	update_date = models.DateTimeField(blank=True, null=True)
 	likes = models.ManyToManyField(User, related_name='blog_posts')
+	hit_count_generic = GenericRelation(HitCount, object_id_field='object_pk',related_query_name='hit_count_generic_relation')
 
 	def total_likes(self):
 		return self.likes.count()
