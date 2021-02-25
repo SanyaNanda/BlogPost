@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-
+#from blog.models import Profile
+#Sfrom django.contrib.auth.models import User
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -41,6 +42,8 @@ INSTALLED_APPS = [
     'django_ckeditor_5',
     'django.contrib.humanize',
     'hitcount',
+    'taggit',
+    
 ]
 
 MIDDLEWARE = [
@@ -133,8 +136,11 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = Path.joinpath(BASE_DIR, 'media')
 
-LOGIN_REDIRECT_URL = 'home'
-
+# if User.id:
+#     LOGIN_REDIRECT_URL = 'home'
+# else:
+#     LOGIN_REDIRECT_URL = 'create_profile_page'
+#SLOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
 # CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js'

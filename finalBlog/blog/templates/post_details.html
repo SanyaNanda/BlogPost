@@ -8,10 +8,10 @@
 {% endblock %}
 {% block content %}
 <h1>{{ post.title }}</h1>
-<small>By: {{ post.author.first_name }} {{ post.author.last_name }} <br>Published on: {{ post.post_date}} IST</small><br>
+<small>By: {{ post.author.first_name }} {{ post.author.last_name }} <br>Published on: {{ post.post_date}} IST</small>
 {% if post.update_date == None %}
 {% else %}
-<small>Last Updated {{ post.update_date | naturaltime }}</small>
+<small> Last Updated {{ post.update_date | naturaltime }}</small>
 {% endif %}
 <br>
 <small>Views: {% get_hit_count for post %}</small><br>
@@ -53,6 +53,23 @@
 	{% endif %}
   <!--<i class="far fa-heart"></i>
   <i class="fas fa-heart"></i>-->
+</form> 
+<form action="{% url 'save_post' post.pk %}" method="POST">
+  {% csrf_token %}
+  {% if user.is_authenticated %}
+  {% if saved %}
+  <button type="submit", name="post_id", value="{{ post.id }}">
+    unsave
+  </button>
+  {% else %}
+  <span>Saved!</span>
+  <button type="submit", name="post_id", value="{{ post.id }}">
+    save
+  </button>
+  {% endif %}
+  {% else %}
+  <small><a href="{% url 'login' %}">login</a> to save</small>
+  {% endif %}
 </form> 
  <br><br>
  <p>Liked by:</p>

@@ -2,6 +2,7 @@
 {% load hitcount_tags %}
 {% load extras %}
 {% block content %}
+<div class="container">
 <h1>Post</h1>
 <ul style="list-style-type: none;">
 {% for post in object_list %}
@@ -16,7 +17,23 @@
 <br/><br/>
 {% endfor %}
 </ul>
-
+</div>
+<div class="row">
+<div class="col-sm-2">
+<div class="panel panel-default">
+<div class="panel-heading">Categories</div>
+<div class="panel-body">
+	<ul>
+		{% for tag in tags %}
+		<li><a href="{% url 'tagged' tag.slug %}">{{ tag.name }}</a></li>
+		{% empty %}
+		<li>No Tags</li>
+		{% endfor %}
+	</ul>
+</div>
+</div>
+</div>
+</div>
 <h3>Popular Posts</h3>
 <ul style="list-style-type: none;">
 {% for p in popular_posts %}
@@ -30,4 +47,5 @@
 {% endif %}
 <br/><br/>
 {% endfor %}
+</ul>
 {% endblock %}

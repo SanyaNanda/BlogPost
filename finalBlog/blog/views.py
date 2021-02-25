@@ -3,13 +3,21 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from .models import Post, Comment
 from .forms import PostForm, EditForm
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib import messages
 from blog.templatetags import extras
 from django.utils import timezone
 from hitcount.views import HitCountDetailView
+from django.db.models import Q
 
-class HomeView(ListView):
+
+class TagMixin(object):
+	def get_context_data(self,**kwargs):
+		context = super(TagMixin, self).get_context_data(**kwargs)
+		context['tags'] = Post.tags.all()
+		return context
+
+class HomeView(TagMixin, ListView):
 	model = Post
 	template_name = 'home.html'
 	ordering = ['-post_date']
@@ -21,6 +29,13 @@ class HomeView(ListView):
 	# 		'popular_posts': Post.objects.order_by('-hit_count_generic')[:3],
 	# 		})
 	# 	return context
+
+class TagIndexView(TagMixin, ListView):
+	template_name = 'home.html'
+	model = Post
+
+	def get_queryset(self):
+		return Post.objects.filter(tags__slug=self.kwargs.get('slug'))
 
 class MyPostView(ListView):
 	model = Post
@@ -42,6 +57,10 @@ class PostDetailView(HitCountDetailView):
 		if stuff.likes.filter(id=self.request.user.id).exists():
 			liked = True
 
+		saved = False
+		if stuff.saved.filter(id=self.request.user.id).exists():
+			saved = True
+
 		comments=Comment.objects.filter(post=stuff, parent=None).order_by('-timestamp')
 		replies=Comment.objects.filter(post=stuff).exclude(parent=None)
 		replyDict={}
@@ -53,6 +72,7 @@ class PostDetailView(HitCountDetailView):
 		
 		context["total_likes"] = total_likes
 		context["liked"] = liked
+		context["saved"] = saved
 		context["comments"] = comments
 		context["replyDict"] = replyDict
 		return context
@@ -91,6 +111,10 @@ class LikedView(ListView):
 	model = Post
 	template_name = 'liked_posts.html'
 
+class SavedView(ListView):
+	model = Post
+	template_name = 'saved_posts.html'
+
 	# def get_context_data(self, *args, **kwargs):
 	# 	context = super(LikedView, self).get_context_data(**kwargs)
 	# 	stuff = get_object_or_404(Post)
@@ -109,6 +133,17 @@ def LikeView(request, pk):
 	else:
 		post.likes.add(request.user)
 		liked = True
+	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
+
+def SaveView(request, pk):
+	post = get_object_or_404(Post, id=request.POST.get('post_id'))
+	saved = False
+	if post.saved.filter(id=request.user.id).exists():
+		post.saved.remove(request.user)
+		saved = False
+	else:
+		post.saved.add(request.user)
+		saved = True
 	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
 
 
@@ -130,7 +165,23 @@ def postComment(request, pk):
 			messages.success(request,"Your Reply has been posted successfully!")
 	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
 
-
+def search(request):
+	querys = request.GET.get('query').split()
+	query = Q()
+	for word in querys:
+		query = query | Q(title__icontains=word) | Q(author__first_name__icontains=word) | Q(author__last_name__icontains=word) | Q(author__username__icontains=word) | Q(body__icontains=word) | Q(tags__name__icontains=word)
+	results = Post.objects.filter(query).distinct()
+	params = {'allPost': results}
+	return render(request, 'search.html', params)
+	# titles = Post.objects.filter(title__icontains=query)
+	#tags = Post.objects.filter(tags__icontains=query)
+	# first = Post.objects.filter(author__first_name__icontains=query)
+	# last = Post.objects.filter(author__last_name__icontains=query)
+	# username = Post.objects.filter(author__username__icontains=query)
+	# body = Post.objects.filter(body__icontains=query)
+	# search = titles.union(body,first,last,username)
+	
+	#return HttpResponse('This is search')
 # def MyLikedPostView(request):
 # 	post = get_object_or_404(Post)
 # 	context={}
