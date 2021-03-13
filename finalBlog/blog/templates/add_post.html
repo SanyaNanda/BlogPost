@@ -3,8 +3,8 @@
 Create a new blog post
 {% endblock %}
 {% block extrahead %}
-<!-- <script>window.CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/';</script>
- -->{{ block.super }}
+<script>window.CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/';</script>
+{{ block.super }}
 {% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
@@ -13,8 +13,8 @@ Create a new blog post
 <div class="form-group">
 <form method="POST" enctype="multipart/form-data">
 	{% csrf_token %}
-	{{ form.media }}
 	{{ form.as_p }}
+	{{ form.media }}
 	<button class="btn btn-secondary">
 		Post
 	</button>

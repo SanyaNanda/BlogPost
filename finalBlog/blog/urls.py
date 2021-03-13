@@ -10,9 +10,10 @@ urlpatterns = [
     path('post/edit/<int:pk>',views.UpdatePostView.as_view(),name="update_post"),
     path('post/delete/<int:pk>',views.DeletePostView.as_view(),name="delete_post"),
     path('like/<int:pk>', views.LikeView, name='like_post'),
+    path('comment_like/<int:pk>', views.CommentLikeView, name='comment_like'),
     path('liked_posts/', views.LikedView.as_view(), name='liked_posts'),
     path('save/<int:pk>', views.SaveView, name='save_post'),
     path('saved_posts/', views.SavedView.as_view(), name='saved_posts'),
-    path('post_comment/<int:pk>',views.postComment,name='post_comment'),
+    #path('comment/<int:pk>', views.postComment, name='post_comment'),
     path('search/',views.search,name="search"),
 ]

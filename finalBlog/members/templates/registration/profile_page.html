@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load hitcount_tags %}
+{% load extras %}
 {% block title %}
 Profile
 {% endblock %}
@@ -47,22 +49,62 @@ Profile
 </div>
 </div>
 </div>
-<ul style="list-style-type: none;">
+<!-- <ul style="list-style-type: none;">
 <li>
-{% if user.is_authenticated %}
+ -->{% if user.is_authenticated %}
 <div class="container">
-<h2>Posts by {{ page_user.user.username }}</h2>
+<h2>Posts by {{ page_user.user.first_name }} {{ page_user.user.last_name }} </h2>
 </div>
+<ul style="list-style-type: none;">
+  <section>
+  <div class="container-fluid">
+    <div class="container">
+      <div class="row">
 {% for post in stuff %}
-<div class="container">
-<a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ page_user.user.first_name}} {{ page_user.user.last_name}} | {{ post.post_date }} IST</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> </div>
-{% if user.id == post.author.id %}
-<div class="container">
+<li>
+        <div class="col-sm">
+          <div class="card">
+            <div class="card-img-top">
+              <img src="{% static 'blog/images/2.jpg' %}" class="img-responsive">
+            </div>
+            <div class="news-content">
+              <span class="categories">Tag</span>
+              <div class="post-meta">
+                <span class="author">
+                  <small><i class="fa fa-user" aria-hidden="true"></i> <b>{{ post.author.first_name}} {{ post.author.last_name}}</b></small>
+                </span>
+                <span class="time">
+                  <small><i class="fa fa-clock-o" aria-hidden="true"></i> <b>{{ post.post_date|date }}</b></small>
+                </span>
+                <span class="read pull-right">
+                  <small><i class="fa fa-book" aria-hidden="true"></i> <b>{{ post.body|readtime }}</b></small>
+                </span>
+              
+                <div class="clearfix"></div>
+              </div>
+              <a href="{% url 'post_details' post.pk %}">
+              <h4 class="post-header">{{ post.title }}</h4>
+              </a>
+              <p>
+                {{ post.body|striptags|truncatewords:20}} <a href="{% url 'post_details' post.pk %}">Read more</a> 
+              </p>
+              {% if user.id == post.author.id %}
 <small><a href="{% url 'update_post' post.pk %}">Edit</a></small>
-<small><a href="{% url 'delete_post' post.pk %}">Delete</a></small></li></div>
+<small><a href="{% url 'delete_post' post.pk %}">Delete</a></small>
 {% endif %}
+            </div>
+          </div>
+        </div>
+<br><br>
+</li>
+
 <br/><br/>
 {% endfor %}
-{% endif %}
+</div>
+    </div>
+  </div>
+</section>
 </ul>
+{% endif %}
+<!-- </ul> -->
 {% endblock %}

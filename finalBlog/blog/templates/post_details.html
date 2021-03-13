@@ -7,15 +7,17 @@
 {{ post.title }}
 {% endblock %}
 {% block content %}
+<div class="container">
 <h1>{{ post.title }}</h1>
-<small>By: {{ post.author.first_name }} {{ post.author.last_name }} <br>Published on: {{ post.post_date}} IST</small>
+<small><i class="fa fa-pencil" aria-hidden="true"></i> {{ post.author.first_name }} {{ post.author.last_name }} <br>
+<i class="fa fa-clock-o" aria-hidden="true"></i> {{ post.post_date}} IST</small>
 {% if post.update_date == None %}
 {% else %}
-<small> Last Updated {{ post.update_date | naturaltime }}</small>
+<small> <i class="fa fa-wrench" aria-hidden="true"></i> {{ post.update_date | naturaltime }}</small>
 {% endif %}
 <br>
-<small>Views: {% get_hit_count for post %}</small><br>
-<small>This Post is a {{ post.body|readtime }}</small>
+<small><i class="fa fa-eye" aria-hidden="true"></i> {% get_hit_count for post %}</small><br>
+<small><i class="fa fa-book" aria-hidden="true"></i> {{ post.body|readtime }}</small>
 <hr>
 <br/>
 {% if post.header_image %}
@@ -117,62 +119,102 @@
   </div>
 </div>
 <div class="container">
-  <h3>Comments</h3>
-  <small>Total comments: {{ comments.count }}</small>
-    {% if user.is_authenticated %}
-  <div class="form-group">
-<form method="POST" action="{% url 'post_comment' post.pk %}">
+ <div class="col-md-7">
+
+              {% load mptt_tags %}
+              <div>
+                {% recursetree comments %}
+                <div id="{{ node.id }}"> <b>{{ node.user.first_name }} {{ node.user.last_name }}</b> <small>{{ node.timestamp|naturaltime }}</small><br>{{ node.comment }}<br>
+ </div>
+  <form action="{% url 'comment_like' node.id %}" method="POST">
   {% csrf_token %}
-  <textarea  rows="6" cols="100" name="comment" placeholder="Enter your comment..."></textarea>
-  <input type="hidden" name="postSno" value="{{ post.id }}">
-  <input type="submit" name="Submit" class="btn btn-sm btn-primary" value="Comment">
-</form>
-</div>
-{% else %}
-Login to Comment
-{% endif %}
-{% for comment in comments %}
-  <div class="row my-3">
-    <div class="col-md-1">{% if comment.user.profile.profile_pic %}
-      <img src="{{ comment.user.profile.profile_pic.url }}" class="img-thumbnail rounded-circle" alt="..." >
-      {% else %}
-       <img src="{% static 'blog/images/no_profile_pic.jpg' %}" class="img-thumbnail rounded-circle" alt="...">
-      {% endif %}</div>
-    <div class="col-md-11"><b>{{ comment.user.username }}</b> <small>{{ comment.timestamp | naturaltime }}</small><br>{{ comment.comment }}
-    <div class="reply mx-0">
-  <button class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#replyBox{{ comment.sno }}" aria-expanded="false" aria-controls="replyBox{{ comment.sno }}">
-    Reply
-  </button>
-</div>
-<div class="collapse" id="replyBox{{ comment.sno }}">
-  <div class="card card-body my-2">
-    <div class="form-group">
-<form method="POST" action="{% url 'post_comment' post.pk %}">
-  {% csrf_token %}
-  <textarea  rows="4" cols="70" name="comment" style="border:solid 1px;" placeholder="Enter your comment..."></textarea>
-  <input type="hidden" name="parentSno" value="{{ comment.sno }}">
-  <input type="hidden" name="postSno" value="{{ post.id }}">
-  <input type="submit" name="Submit" class="btn btn-sm btn-primary" value="Comment">
-</form>
-</div>
-</div>
-</div>
-<div class="replies my-2">
-  {% for reply in replyDict|get_val:comment.sno %}
-  <div class="row my-2">
-    <div class="col-md-1">{% if reply.user.profile.profile_pic %}
-      <img src="{{ reply.user.profile.profile_pic.url }}" class="img-thumbnail rounded-circle w-75" alt="..." >
-      {% else %}
-       <img src="{% static 'blog/images/no_profile_pic.jpg' %}" class="img-thumbnail rounded-circle w-75" alt="...">
-      {% endif %}</div>
-    <div class="col-md-11"><b>{{ reply.user.username }}</b> <small>{{ reply.timestamp | naturaltime }}</small><br>{{ reply.comment }}
+  {% if user.is_authenticated %}
+  {% if liked %}
+  <button type="submit", name="commentt_id", value="{{ node.id }}">
+    thumb down
+  </button><small>->{{ node.likes.count }}</small>
+  {% else %}
+  <button type="submit", name="commentt_id", value="{{ node.id }}">
+    thumbs up
+  </button><small>->{{ node.likes.count }}</small>
+  {% endif %}
+  {% else %}
+  <small><a href="{% url 'login' %}">login</a> to like</small>
+  {% endif %}
+</form> 
+                <button class="button" onclick="myFunction( {{ node.id }} )">Reply</button>
+                <hr>
+
+                {% if not node.is_leaf_node %}
+                <div class="children pl-2 pl-md-5">
+                  {{ children }}
+                </div>
+                {% endif %}
+                {% endrecursetree %}
+              </div>
+                <h2>Make a new comment</h2>
+
+              <div class="form-group">
+              <form method="POST" id="myForm"> <!-- action="{% url 'post_details' post.pk %}"> --> 
+                {{ comment_form.as_p }}
+                {% csrf_token %}
+                <button class="btn btn-secondary">
+                  Submit
+                </button>
+              </form>
+              </div>
+
+          </div>
+        </div>
+      </div>
     </div>
   <br>
 </div>
-  {% endfor %}
+
 </div>
 </div>
 </div>
-{% endfor %}
+
+</div>
+<script>
+  function formExit() {
+    document.getElementById("newForm").remove();
+  }
+
+  function myFunction(id) {
+    if (document.contains(document.getElementById("newForm"))) {
+      document.getElementById("newForm").remove();
+    }
+
+    var d1 = document.getElementById(id);
+    d1.insertAdjacentHTML('afterend',
+      '<form id="newForm" class="form-insert py-2" method="post"> \
+      {% csrf_token %} \
+      <div class="d-flex justify-content-between"><h2>Reply:</h2><div><button type="button" class="btn btn-outline-secondary" onclick="formExit()"">Close</button></div></div> \
+      <label for="id_comment">Content:</label> \
+      <textarea name="comment" cols="40" rows="5" class="form-control" required id="id_content"></textarea> \<select name="parent" class="d-none" id="parent"> \
+      <option value="' + id + '" selected="' + id + '"></option> </select> \
+      <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button> \
+      </form>');
+
+    //document.querySelector('#id_parentt [value="' + id + '"]').selected = true;
+  }
+
+  $('#myForm').trigger("reset");
+</script>
+<!-- <script>
+  function myFunction(id){
+    var a = document.getElementById(id);
+    a.insertAdjacentHTML('afterend', 
+      "<form method="POST" id="myForm">\
+      <p> <select name="parent" class="d-none" id="id_parentt">\
+      <option value="' + id + '" selected="' + id + '"></option>\
+      </select></p>\
+      <p><label for="id_comment">Comment:</label> <textarea name="comment" cols="40" rows="10" class="form-control" required="" id="id_comment"></textarea></p>\
+      {% csrf_token %}\
+      <button class="btn btn-secondary">Submit</button>\
+      </form>");
+  }
+</script> -->
 </div>
 {% endblock %}

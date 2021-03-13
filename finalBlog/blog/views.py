@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, edit
 from .models import Post, Comment
-from .forms import PostForm, EditForm
+from .forms import PostForm, EditForm, NewCommentForm
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib import messages
@@ -42,11 +42,31 @@ class MyPostView(ListView):
 	template_name = 'my_posts.html'
 	ordering = ['-post_date']
 
-class PostDetailView(HitCountDetailView):
+class PostDetailView(edit.FormMixin, HitCountDetailView):
 	model = Post
 	template_name = 'post_details.html'
 	context_object_name = 'post'
 	count_hit = True
+	form_class = NewCommentForm
+
+
+	def post(self, *args, **kwargs):
+		stuff = get_object_or_404(Post, id=self.kwargs['pk'])
+		comments = Comment.objects.filter(post=stuff, status=True)
+		user_comment = None
+
+		if self.request.method == 'POST':
+			comment_form = self.get_form()
+			if comment_form.is_valid():
+				user_comment = comment_form.save(commit=False)
+				user_comment.post = stuff
+				user_comment.user = self.request.user
+				user_comment.save()
+				return HttpResponseRedirect(self.request.path_info)
+		else:
+			comment_form = self.get_form()
+		return HttpResponseRedirect(self.request.path_info)
+
 
 	def get_context_data(self, *args, **kwargs):
 		context = super(PostDetailView, self).get_context_data(**kwargs)
@@ -61,20 +81,12 @@ class PostDetailView(HitCountDetailView):
 		if stuff.saved.filter(id=self.request.user.id).exists():
 			saved = True
 
-		comments=Comment.objects.filter(post=stuff, parent=None).order_by('-timestamp')
-		replies=Comment.objects.filter(post=stuff).exclude(parent=None)
-		replyDict={}
-		for reply in replies:
-			if reply.parent.sno not in replyDict.keys():
-				replyDict[reply.parent.sno] = [reply]
-			else:
-				replyDict[reply.parent.sno].append(reply)
-		
+		comments = Comment.objects.filter(post=stuff, status=True)	
 		context["total_likes"] = total_likes
 		context["liked"] = liked
 		context["saved"] = saved
 		context["comments"] = comments
-		context["replyDict"] = replyDict
+		context["comment_form"] = self.get_form()
 		return context
 
 class AddPostView(CreateView):
@@ -124,6 +136,17 @@ class SavedView(ListView):
 	# 	context["liked"] = liked
 	# 	return context
 
+def CommentLikeView(request, pk):
+	comment = get_object_or_404(Comment, id=request.POST.get('commentt_id'))
+	liked = False
+	if comment.likes.filter(id=request.user.id).exists():
+		comment.likes.remove(request.user)
+		liked = False
+	else:
+		comment.likes.add(request.user)
+		liked = True
+	return HttpResponseRedirect(reverse('post_details', args=[str(comment.post.id)]))
+
 def LikeView(request, pk):
 	post = get_object_or_404(Post, id=request.POST.get('post_id'))
 	liked = False
@@ -147,23 +170,37 @@ def SaveView(request, pk):
 	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
 
 
-def postComment(request, pk):
-	if request.method=="POST":
-		comment = request.POST.get("comment")
-		user = request.user
-		postSno = request.POST.get("postSno")
-		post = get_object_or_404(Post, id=request.POST.get('postSno'))
-		parentSno = request.POST.get("parentSno")
-		if parentSno == None:
-			comment = Comment(comment=comment, user=user, post=post)
-			comment.save()
-			messages.success(request,"Your comment has been posted successfully!")
-		else:
-			parent = Comment.objects.get(sno = parentSno)
-			comment = Comment(comment=comment, user=user, post=post, parent=parent)
-			comment.save()
-			messages.success(request,"Your Reply has been posted successfully!")
-	return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
+# def postComment(request, pk):
+# 	# if request.method=="POST":
+# 	# 	comment = request.POST.get("comment")
+# 	# 	user = request.user
+# 	# 	postSno = request.POST.get("postSno")
+# 	# 	post = get_object_or_404(Post, id=request.POST.get('postSno'))
+# 	# 	parentSno = request.POST.get("parentSno")
+# 	# 	if parentSno == None:
+# 	# 		comment = Comment(comment=comment, user=user, post=post)
+# 	# 		comment.save()
+# 	# 		messages.success(request,"Your comment has been posted successfully!")
+# 	# 	else:
+# 	# 		parent = Comment.objects.get(sno = parentSno)
+# 	# 		comment = Comment(comment=comment, user=user, post=post, parent=parent)
+# 	# 		comment.save()
+# 	# 		messages.success(request,"Your Reply has been posted successfully!")
+# 	# return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
+# 	post = get_object_or_404(Post, id=request.POST.get('post_id'))
+# 	comments = Comment.objects.filter(post=post, status=True)
+# 	user_comment = None
+
+# 	if request.method == 'POST':
+# 		comment_form = NewCommentForm(request.POST)
+# 		if comment_form.is_valid():
+# 			user_comment = comment_form.save(commit=False)
+# 			user_comment.post = post
+# 			user_comment.save()
+# 			return HttpResponseRedirect(reverse('post_details', args=[str(pk)]))
+# 	else:
+# 		comment_form = NewCommentForm()
+# 	return render(request, 'post_details.html', {'post': post, 'comments':  user_comment, 'comments': comments, 'comment_form': comment_form})
 
 def search(request):
 	querys = request.GET.get('query').split()

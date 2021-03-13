@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     'blog',
     'members',
     'django_ckeditor_5',
+    # 'ckeditor',
     'django.contrib.humanize',
     'hitcount',
     'taggit',
+    'mptt',
     
 ]
 
@@ -149,11 +151,6 @@ LOGOUT_REDIRECT_URL = 'home'
 
 # CKEDITOR_IMAGE_BACKEND = "pillow"
 
-# CKEDITOR_CONFIGS = {
-#     'default': {
-#         'toolbar': None,
-#     },
-# }
 customColorPalette = [
         {
             'color': 'hsl(4, 90%, 58%)',
@@ -197,10 +194,8 @@ CKEDITOR_5_CONFIGS = {
             'blockQuote', 'imageUpload'
         ],
         'toolbar': ['heading', '|', 'outdent', 'indent', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
-        'code','subscript', 'superscript', 'highlight', '|',
-                    'bulletedList', 'numberedList', 'todoList', '|',  'blockQuote', 'imageUpload', '|',
-                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
-                    'insertTable',],
+        'code','subscript', 'superscript', '|',
+                    'bulletedList', 'numberedList', '|',  'blockQuote', 'imageUpload', 'mediaEmbed',],
         'image': {
             'toolbar': ['imageTextAlternative', 'imageTitle', '|', 'imageStyle:alignLeft', 'imageStyle:full',
                         'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:side',  '|'],
@@ -213,18 +208,6 @@ CKEDITOR_5_CONFIGS = {
             ]
 
         },
-        'table': {
-            'contentToolbar': [ 'tableColumn', 'tableRow', 'mergeTableCells',
-            'tableProperties', 'tableCellProperties' ],
-            'tableProperties': {
-                'borderColors': customColorPalette,
-                'backgroundColors': customColorPalette
-            },
-            'tableCellProperties': {
-                'borderColors': customColorPalette,
-                'backgroundColors': customColorPalette
-            }
-        },
         'heading' : {
             'options': [
                 { 'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph' },
@@ -235,5 +218,4 @@ CKEDITOR_5_CONFIGS = {
         }
     }
 }
-
 

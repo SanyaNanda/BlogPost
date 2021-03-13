@@ -7,14 +7,16 @@ from django_ckeditor_5.fields import CKEditor5Field
 from hitcount.models import HitCountMixin, HitCount
 from django.contrib.contenttypes.fields import GenericRelation
 from taggit.managers import TaggableManager
-#from ckeditor.fields import RichTextField
+from mptt.models import MPTTModel, TreeForeignKey 
+from ckeditor.fields import RichTextField
 # Create your models here.
 class Post(models.Model):
 	title = models.CharField(max_length=255)
 	header_image = models.ImageField(null=True, blank=True, upload_to="images/")
 	author = models.ForeignKey(User, on_delete=models.CASCADE)
-	body = models.TextField()
+	#body = models.TextField()
 	#body = CKEditor5Field('Text', config_name='extends')
+	body = CKEditor5Field('Text', config_name='extends', blank=True)
 	post_date = models.DateTimeField(auto_now_add=True, editable=False)
 	update_date = models.DateTimeField(blank=True, null=True)
 	likes = models.ManyToManyField(User, related_name='blog_posts')
@@ -64,13 +66,19 @@ class Profile(models.Model):
 		#return reverse('post_details', args=(str(self.id)))
 		return reverse('home')
 
-class Comment(models.Model):
-	sno = models.AutoField(primary_key = True)
+class Comment(MPTTModel):
+	#sno = models.AutoField(primary_key = True)
+	post = models.ForeignKey(Post, on_delete=models.CASCADE)
+	parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='parent_comment')
 	comment = models.TextField()
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
-	post = models.ForeignKey(Post, on_delete=models.CASCADE)
-	parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, related_name='parent_comment')
 	timestamp = models.DateTimeField(default=timezone.now)
+	# publish = models.DateTimeField(auto_now_add=True)
+	status = models.BooleanField(default=True)
+	likes = models.ManyToManyField(User, related_name='commentlikes')
+
+	class MPTTMeta:
+		order_insertion_by = ['timestamp']
 
 	def __str__(self):
 		return self.comment[0:20] + '... by ' + str(self.user.username)

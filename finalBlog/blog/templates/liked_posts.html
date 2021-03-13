@@ -1,19 +1,58 @@
 {% extends 'base.html' %}
+{% load hitcount_tags %}
+{% load extras %}
+{% load static %}
 {% block content %}
 <h1>Liked Posts</h1>
 <ul style="list-style-type: none;">
+	<section>
+	<div class="container-fluid">
+		<div class="container">
+			<div class="row">
 {% for post in object_list %}
 {% if user in post.likes.all %}
 <li>
-{% if user.is_authenticated %}
-<a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ post.author.first_name}} {{ post.author.last_name}} | {{ post.post_date }} IST</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a> </li>
-{% if user.id == post.author.id %}
-<small><a href="{% url 'update_post' post.pk %}">Edit</a></small>
-<small><a href="{% url 'delete_post' post.pk %}">Delete</a></small>
-<br/><br/>
-{% endif %}
-{% endif %}
+				<div class="col-sm">
+					<div class="card">
+						<div class="card-img-top">
+							<img src="{% static 'blog/images/2.jpg' %}" class="img-responsive">
+						</div>
+						<div class="news-content">
+							<span class="categories">Tag</span>
+							<div class="post-meta">
+								<span class="author">
+									<small><i class="fa fa-user" aria-hidden="true"></i> <b>{{ post.author.first_name}} {{ post.author.last_name}}</b></small>
+								</span>
+								<span class="time">
+									<small><i class="fa fa-clock-o" aria-hidden="true"></i> <b>{{ post.post_date|date }}</b></small>
+								</span>
+								<span class="read pull-right">
+									<small><i class="fa fa-book" aria-hidden="true"></i> <b>{{ post.body|readtime }}</b></small>
+								</span>
+								<!-- <span class="views pull-right">
+									<a href="#"><small><i class="fa fa-eye" aria-hidden="true"></i> <b>{% get_hit_count for post %}</b></small></a>
+								</span> -->
+								<div class="clearfix"></div>
+							</div>
+							<a href="{% url 'post_details' post.pk %}">
+							<h4 class="post-header">{{ post.title }}</h4>
+							</a>
+							<p>
+								{{ post.body|striptags|truncatewords:20}} <a href="{% url 'post_details' post.pk %}">Read more</a> 
+							</p>
+						</div>
+					</div>
+				</div>
+<!-- <a href="{% url 'post_details' post.pk %}">{{ post.title }}</a> - <small>{{ post.author.first_name}} {{ post.author.last_name}} | {{ post.post_date }} IST | Views: {% get_hit_count for post %} | {{ post.body|readtime }}</small><br>{{ post.body|safe|truncatewords:30}} <a href="{% url 'post_details' post.pk %}">Read more</a>  -->
+<br><br>
+</li>
+<!-- <br/><br/> -->
 {% endif %}
 {% endfor %}
+</div>
+		</div>
+	</div>
+</section>
 </ul>
+
 {% endblock %}
